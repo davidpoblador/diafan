@@ -1,7 +1,7 @@
 [project]
-name = "subv"
+name = "diafan"
 version = "0.1.0"
-description = "Add your description here"
+description = "CLI for interacting with Socrata-based open data portals"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
@@ -10,3 +10,10 @@ dependencies = [
     "tqdm>=4.67.3",
     "typer>=0.24.1",
 ]
+
+[project.scripts]
+diafan = "diafan.cli:app"
+
+[build-system]
+requires = ["uv_build>=0.7.2,<0.8"]
+build-backend = "uv_build"
