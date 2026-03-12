@@ -1,14 +1,14 @@
 [project]
 name = "diafan"
 version = "0.1.0"
-description = "CLI for interacting with Socrata-based open data portals"
+description = "CLI per consultar i descarregar conjunts de dades del Portal de Transparència de Catalunya"
 readme = "README.md"
 license = "MIT"
 authors = [
     { name = "David Poblador i Garcia", email = "david@poblador.com" }
 ]
 requires-python = ">=3.14"
-keywords = ["socrata", "open-data", "datasets", "cli", "csv", "download"]
+keywords = ["transparencia", "catalunya", "dades-obertes", "open-data", "cli", "csv"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Environment :: Console",
@@ -23,6 +23,8 @@ classifiers = [
 ]
 dependencies = [
     "httpx[http2]>=0.28.1",
+    "python-slugify>=8.0.4",
+    "rich>=14.0.0",
     "tqdm>=4.67.3",
     "typer>=0.24.1",
 ]
