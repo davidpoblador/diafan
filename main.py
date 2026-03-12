@@ -14,7 +14,7 @@ app = typer.Typer()
 DEFAULT_DOMAIN = "analisi.transparenciacatalunya.cat"
 CHANGES_PAGE_SIZE = 100
 ARCHIVE_POLL_INTERVAL_SECONDS = 3
-ARCHIVE_POLL_TIMEOUT_SECONDS = 300
+ARCHIVE_POLL_TIMEOUT_SECONDS = 600
 
 
 def _base_url(domain: str) -> str:
