@@ -5,7 +5,7 @@ description = "CLI per consultar i descarregar conjunts de dades del Portal de T
 readme = "README.md"
 license = "MIT"
 authors = [
-    { name = "David Poblador i Garcia", email = "david@poblador.com" }
+    { name = "David Poblador i Garcia", email = "hola@alltuner.com" }
 ]
 requires-python = ">=3.14"
 keywords = ["transparencia", "catalunya", "dades-obertes", "open-data", "cli", "csv"]
