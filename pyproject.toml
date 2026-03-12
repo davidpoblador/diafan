@@ -36,7 +36,7 @@ Issues = "https://github.com/davidpoblador/diafan/issues"
 diafan = "diafan.cli:app"
 
 [build-system]
-requires = ["uv_build>=0.7.2,<0.8"]
+requires = ["uv_build>=0.10.9,<0.11"]
 build-backend = "uv_build"
 
 [dependency-groups]
