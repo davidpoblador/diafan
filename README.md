@@ -192,7 +192,7 @@ Les comandes `download` i `download-current` accepten l'opció `--format` (`-f`)
 
 ## Autor
 
-[David Poblador i Garcia](https://poblador.cat/) · [LinkedIn](https://www.linkedin.com/in/davidpoblador) · [X](https://x.com/davidpoblador)
+[David Poblador i Garcia](https://poblador.cat/) · [LinkedIn](https://www.linkedin.com/in/davidpoblador) · [X/Twitter](https://x.com/davidpoblador)
 
 ## Llicència
 
