@@ -14,13 +14,28 @@ uvx diafan download-current gn9e-3qhr -f json
 
 ## Instal·lació
 
-La manera més senzilla d'executar `diafan` és amb `uvx`, que no requereix instal·lació:
+La manera més senzilla d'executar `diafan` és amb [`uvx`](https://docs.astral.sh/uv/), que no requereix instal·lació prèvia del paquet:
 
 ```
 uvx diafan --help
 ```
 
-Per instal·lar-lo permanentment:
+Si no teniu `uv` instal·lat, podeu obtenir-lo amb:
+
+```
+# macOS / Linux
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# macOS (Homebrew)
+brew install uv
+
+# Windows
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+
+Consulteu la [documentació oficial d'uv](https://docs.astral.sh/uv/getting-started/installation/) per a més opcions.
+
+Per instal·lar `diafan` permanentment:
 
 ```
 uv tool install diafan
