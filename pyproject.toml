@@ -3,12 +3,34 @@ name = "diafan"
 version = "0.1.0"
 description = "CLI for interacting with Socrata-based open data portals"
 readme = "README.md"
+license = "MIT"
+authors = [
+    { name = "David Poblador i Garcia", email = "david@poblador.com" }
+]
 requires-python = ">=3.14"
+keywords = ["socrata", "open-data", "datasets", "cli", "csv", "download"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Internet :: WWW/HTTP",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Utilities",
+]
 dependencies = [
     "httpx[http2]>=0.28.1",
     "tqdm>=4.67.3",
     "typer>=0.24.1",
 ]
+
+[project.urls]
+Homepage = "https://github.com/davidpoblador/diafan"
+Repository = "https://github.com/davidpoblador/diafan"
+Issues = "https://github.com/davidpoblador/diafan/issues"
 
 [project.scripts]
 diafan = "diafan.cli:app"
@@ -16,3 +38,9 @@ diafan = "diafan.cli:app"
 [build-system]
 requires = ["uv_build>=0.7.2,<0.8"]
 build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+    "ruff>=0.14.14",
+]
