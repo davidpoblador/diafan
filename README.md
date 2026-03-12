@@ -190,6 +190,10 @@ Les comandes `download` i `download-current` accepten l'opció `--format` (`-f`)
 - `csv` (per defecte)
 - `json`
 
+## Autor
+
+[David Poblador i Garcia](https://poblador.cat/) · [LinkedIn](https://www.linkedin.com/in/davidpoblador) · [X](https://x.com/davidpoblador)
+
 ## Llicència
 
 MIT
