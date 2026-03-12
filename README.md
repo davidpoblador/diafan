@@ -14,7 +14,7 @@ uvx diafan download-current gn9e-3qhr -f json
 
 ## Instal·lació
 
-La manera més senzilla d'executar diafan és amb `uvx`, que no requereix instal·lació:
+La manera més senzilla d'executar `diafan` és amb `uvx`, que no requereix instal·lació:
 
 ```
 uvx diafan --help
@@ -76,7 +76,7 @@ uvx diafan info gn9e-3qhr
 │  del dia anterior).                                                          │
 │                                                                              │
 │  Etiquetes                                                                   │
-│  #embassaments #nivell #msnm #volum #hm3 #ods6_aigua neta i sanejament      │
+│  #embassaments #nivell #msnm #volum #hm3 #ods6_aigua neta i sanejament       │
 │  #ods13_acció pel clima #ods12_producció i consum responsable #aca           │
 │  #percentatge                                                                │
 ╰──────────────────────────────────────────────────────────────────────────────╯
