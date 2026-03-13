@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.1.2](https://github.com/davidpoblador/diafan/compare/v0.1.1...v0.1.2) (2026-03-13)
+
+
+### Features
+
+* paginated async download for download-current ([#12](https://github.com/davidpoblador/diafan/issues/12)) ([ffeb3b7](https://github.com/davidpoblador/diafan/commit/ffeb3b769668dfa709ac8627d44fe8b0a8c8e969))
+
+
+### Documentation Updates
+
+* add uv/uvx installation instructions to README ([#11](https://github.com/davidpoblador/diafan/issues/11)) ([fe095b3](https://github.com/davidpoblador/diafan/commit/fe095b3812dbff97b26e12646ded9102f2339c0c))
+* rename X link to X/Twitter in README ([#9](https://github.com/davidpoblador/diafan/issues/9)) ([c1f24d5](https://github.com/davidpoblador/diafan/commit/c1f24d532a49ab86cff323cf92fbbe7ec0dd0239))
+
 ## [0.1.1](https://github.com/davidpoblador/diafan/compare/v0.1.0...v0.1.1) (2026-03-12)
 
 
