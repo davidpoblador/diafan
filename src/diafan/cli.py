@@ -5,6 +5,7 @@ import asyncio
 import enum
 import json
 import math
+import tempfile
 import time
 from datetime import datetime
 from pathlib import Path
@@ -426,36 +427,41 @@ async def _download_current_paginated(
     resource_url = f"{base_url}/resource/{dataset_id}.{fmt_ext}"
     semaphore = asyncio.Semaphore(DOWNLOAD_CONCURRENCY)
 
-    async def fetch_page(page: int) -> str:
-        async with semaphore:
-            offset = page * RESOURCE_PAGE_SIZE
-            resp = await client.get(
-                resource_url,
-                params={
-                    "$limit": RESOURCE_PAGE_SIZE,
-                    "$offset": offset,
-                    "$order": ":id",
-                },
-                timeout=600,
-            )
-            resp.raise_for_status()
-            progress.update(1)
-            return resp.text
+    with tempfile.TemporaryDirectory(prefix="diafan-") as tmp_dir:
+        tmp_path = Path(tmp_dir)
 
-    with tqdm.tqdm(total=total_pages, unit="pàg", desc="Descarregant") as progress:
-        pages = await asyncio.gather(*[fetch_page(p) for p in range(total_pages)])
+        async def fetch_page(page: int) -> None:
+            async with semaphore:
+                offset = page * RESOURCE_PAGE_SIZE
+                resp = await client.get(
+                    resource_url,
+                    params={
+                        "$limit": RESOURCE_PAGE_SIZE,
+                        "$offset": offset,
+                        "$order": ":id",
+                    },
+                    timeout=600,
+                )
+                resp.raise_for_status()
+                (tmp_path / f"page_{page:06d}").write_text(resp.text)
+                progress.update(1)
 
-    with open(output, "w") as f:
-        if fmt_ext == "json":
-            all_items: list = []
-            for page_text in pages:
-                all_items.extend(json.loads(page_text))
-            f.write(json.dumps(all_items))
-        else:
-            for i, page_text in enumerate(pages):
-                if i > 0:
-                    page_text = page_text[page_text.index("\n") + 1 :]
-                f.write(page_text)
+        with tqdm.tqdm(total=total_pages, unit="pàg", desc="Descarregant") as progress:
+            await asyncio.gather(*[fetch_page(p) for p in range(total_pages)])
+
+        with open(output, "w") as f:
+            if fmt_ext == "json":
+                all_items: list = []
+                for page in range(total_pages):
+                    page_text = (tmp_path / f"page_{page:06d}").read_text()
+                    all_items.extend(json.loads(page_text))
+                f.write(json.dumps(all_items))
+            else:
+                for page in range(total_pages):
+                    page_text = (tmp_path / f"page_{page:06d}").read_text()
+                    if page > 0:
+                        page_text = page_text[page_text.index("\n") + 1 :]
+                    f.write(page_text)
 
 
 @app.command()
