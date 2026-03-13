@@ -2,6 +2,8 @@
 # ABOUTME: Supports listing versions, downloading snapshots, and inspecting schema.
 
 import enum
+import json
+import math
 import time
 from datetime import datetime
 from pathlib import Path
@@ -21,6 +23,7 @@ console = Console()
 
 DEFAULT_DOMAIN = "analisi.transparenciacatalunya.cat"
 CHANGES_PAGE_SIZE = 100
+RESOURCE_PAGE_SIZE = 50_000
 ARCHIVE_POLL_INTERVAL_SECONDS = 3
 ARCHIVE_POLL_TIMEOUT_SECONDS = 600
 
@@ -44,7 +47,9 @@ def _format_timestamp(ts: str) -> str:
     return dt.strftime("%Y-%m-%d %H:%M")
 
 
-def _build_archive(client: httpx.Client, domain: str, dataset_id: str, version: int) -> None:
+def _build_archive(
+    client: httpx.Client, domain: str, dataset_id: str, version: int
+) -> None:
     """Trigger archive materialization and poll until done."""
     base = _base_url(domain)
 
@@ -75,7 +80,9 @@ def _build_archive(client: httpx.Client, domain: str, dataset_id: str, version: 
                 return
             if status.get("type") == "error":
                 progress.close()
-                console.print(f"[red]Error construint l'arxiu: {status}[/red]", stderr=True)
+                console.print(
+                    f"[red]Error construint l'arxiu: {status}[/red]", stderr=True
+                )
                 raise typer.Exit(code=1)
 
             progress.desc = status.get("type", "?")
@@ -95,7 +102,11 @@ def _fetch_metadata(client: httpx.Client, domain: str, dataset_id: str) -> dict:
 
 
 def _resolve_output_path(
-    client: httpx.Client, domain: str, dataset_id: str, suffix: str, fmt: Format,
+    client: httpx.Client,
+    domain: str,
+    dataset_id: str,
+    suffix: str,
+    fmt: Format,
 ) -> Path:
     """Build a default output filename from the dataset's human name."""
     meta = _fetch_metadata(client, domain, dataset_id)
@@ -161,8 +172,12 @@ def _format_unix_timestamp(ts: int | float) -> Text:
 
 @app.command()
 def info(
-    dataset_id: str = typer.Argument(help="Identificador del conjunt de dades (p. ex. gn9e-3qhr)"),
-    domain: str = typer.Option(DEFAULT_DOMAIN, help="Domini del portal de dades obertes"),
+    dataset_id: str = typer.Argument(
+        help="Identificador del conjunt de dades (p. ex. gn9e-3qhr)"
+    ),
+    domain: str = typer.Option(
+        DEFAULT_DOMAIN, help="Domini del portal de dades obertes"
+    ),
 ) -> None:
     """Mostra les metadades bàsiques d'un conjunt de dades."""
     with _make_client() as client:
@@ -205,10 +220,14 @@ def info(
         table.add_row("Publicat", _format_unix_timestamp(meta["publicationDate"]))
 
     if meta.get("rowsUpdatedAt"):
-        table.add_row("Dades actualitzades", _format_unix_timestamp(meta["rowsUpdatedAt"]))
+        table.add_row(
+            "Dades actualitzades", _format_unix_timestamp(meta["rowsUpdatedAt"])
+        )
 
     if meta.get("viewLastModified"):
-        table.add_row("Última modificació", _format_unix_timestamp(meta["viewLastModified"]))
+        table.add_row(
+            "Última modificació", _format_unix_timestamp(meta["viewLastModified"])
+        )
 
     parts: list = [table]
 
@@ -233,8 +252,12 @@ def info(
 
 @app.command()
 def schema(
-    dataset_id: str = typer.Argument(help="Identificador del conjunt de dades (p. ex. gn9e-3qhr)"),
-    domain: str = typer.Option(DEFAULT_DOMAIN, help="Domini del portal de dades obertes"),
+    dataset_id: str = typer.Argument(
+        help="Identificador del conjunt de dades (p. ex. gn9e-3qhr)"
+    ),
+    domain: str = typer.Option(
+        DEFAULT_DOMAIN, help="Domini del portal de dades obertes"
+    ),
 ) -> None:
     """Mostra l'estructura (columnes) d'un conjunt de dades."""
     with _make_client() as client:
@@ -262,10 +285,16 @@ def schema(
 
 @app.command()
 def versions(
-    dataset_id: str = typer.Argument(help="Identificador del conjunt de dades (p. ex. gn9e-3qhr)"),
-    domain: str = typer.Option(DEFAULT_DOMAIN, help="Domini del portal de dades obertes"),
+    dataset_id: str = typer.Argument(
+        help="Identificador del conjunt de dades (p. ex. gn9e-3qhr)"
+    ),
+    domain: str = typer.Option(
+        DEFAULT_DOMAIN, help="Domini del portal de dades obertes"
+    ),
     limit: int = typer.Option(15, help="Nombre màxim de versions a mostrar"),
-    all_versions_flag: bool = typer.Option(False, "--all", help="Mostra totes les versions"),
+    all_versions_flag: bool = typer.Option(
+        False, "--all", help="Mostra totes les versions"
+    ),
 ) -> None:
     """Llista les versions arxivades d'un conjunt de dades, de la més recent a la més antiga."""
     if all_versions_flag:
@@ -277,11 +306,16 @@ def versions(
     with _make_client() as client:
         meta = _fetch_metadata(client, domain, dataset_id)
         while True:
-            params: dict[str, str | int] = {"limit": CHANGES_PAGE_SIZE, "cursor": cursor}
+            params: dict[str, str | int] = {
+                "limit": CHANGES_PAGE_SIZE,
+                "cursor": cursor,
+            }
             resp = client.get(url, params=params, timeout=30)
             resp.raise_for_status()
             data = resp.json()
-            entries = [e for e in data.get("resource", []) if e.get("type") == "archive"]
+            entries = [
+                e for e in data.get("resource", []) if e.get("type") == "archive"
+            ]
             all_versions.extend(entries)
 
             next_cursor = data.get("meta", {}).get("next")
@@ -318,25 +352,35 @@ def versions(
     console.print(table)
     count = len(all_versions)
     if truncated:
-        console.print(f"\nMostrant les {count} versions més recents. Feu servir [bold]--all[/bold] per veure-les totes.")
+        console.print(
+            f"\nMostrant les {count} versions més recents. Feu servir [bold]--all[/bold] per veure-les totes."
+        )
     else:
         console.print(f"\nTotal: {count} {'versió' if count == 1 else 'versions'}")
 
 
 @app.command()
 def download(
-    dataset_id: str = typer.Argument(help="Identificador del conjunt de dades (p. ex. gn9e-3qhr)"),
+    dataset_id: str = typer.Argument(
+        help="Identificador del conjunt de dades (p. ex. gn9e-3qhr)"
+    ),
     version: int = typer.Argument(help="Número de versió a descarregar"),
-    output: Path = typer.Option(None, "--output", "-o", help="Ruta del fitxer de sortida"),
+    output: Path = typer.Option(
+        None, "--output", "-o", help="Ruta del fitxer de sortida"
+    ),
     fmt: Format = typer.Option(Format.csv, "--format", "-f", help="Format de sortida"),
-    domain: str = typer.Option(DEFAULT_DOMAIN, help="Domini del portal de dades obertes"),
+    domain: str = typer.Option(
+        DEFAULT_DOMAIN, help="Domini del portal de dades obertes"
+    ),
 ) -> None:
     """Descarrega una versió arxivada específica d'un conjunt de dades."""
     base = _base_url(domain)
 
     with _make_client() as client:
         if output is None:
-            output = _resolve_output_path(client, domain, dataset_id, f"v{version}", fmt)
+            output = _resolve_output_path(
+                client, domain, dataset_id, f"v{version}", fmt
+            )
 
         console.print(f"Sol·licitant arxiu per {dataset_id} v{version}...")
         _build_archive(client, domain, dataset_id, version)
@@ -356,12 +400,78 @@ def download(
     console.print(f"Desat a {output} ({size_mb:.1f} MB)")
 
 
+def _download_current_paginated(
+    client: httpx.Client,
+    base_url: str,
+    dataset_id: str,
+    output: Path,
+    fmt_ext: str,
+) -> None:
+    """Download a dataset via the SODA resource API with pagination."""
+    resource_url = f"{base_url}/resource/{dataset_id}.{fmt_ext}"
+
+    # Get total row count
+    count_resp = client.get(
+        f"{base_url}/resource/{dataset_id}.json",
+        params={"$select": "count(*)"},
+        timeout=30,
+    )
+    count_resp.raise_for_status()
+    total_rows = int(count_resp.json()[0]["count"])
+
+    if total_rows == 0:
+        output.write_text("")
+        return
+
+    total_pages = math.ceil(total_rows / RESOURCE_PAGE_SIZE)
+
+    with (
+        open(output, "w") as f,
+        tqdm.tqdm(total=total_rows, unit="files", desc="Descarregant") as progress,
+    ):
+        json_accumulator: list = [] if fmt_ext == "json" else None
+
+        for page in range(total_pages):
+            offset = page * RESOURCE_PAGE_SIZE
+            resp = client.get(
+                resource_url,
+                params={
+                    "$limit": RESOURCE_PAGE_SIZE,
+                    "$offset": offset,
+                    "$order": ":id",
+                },
+                timeout=600,
+            )
+            resp.raise_for_status()
+
+            if fmt_ext == "json":
+                json_accumulator.extend(resp.json())
+            else:
+                text = resp.text
+                if page > 0:
+                    # Strip the header line from subsequent pages
+                    text = text[text.index("\n") + 1 :]
+                f.write(text)
+
+            rows_fetched = min(RESOURCE_PAGE_SIZE, total_rows - offset)
+            progress.update(rows_fetched)
+
+        if fmt_ext == "json":
+            f.write(json.dumps(json_accumulator))
+
+
 @app.command()
 def download_current(
-    dataset_id: str = typer.Argument(help="Identificador del conjunt de dades (p. ex. gn9e-3qhr)"),
-    output: Path = typer.Option(None, "--output", "-o", help="Ruta del fitxer de sortida"),
+    dataset_id: str = typer.Argument(
+        help="Identificador del conjunt de dades (p. ex. gn9e-3qhr)"
+    ),
+    output: Path = typer.Option(
+        None, "--output", "-o", help="Ruta del fitxer de sortida"
+    ),
     fmt: Format = typer.Option(Format.csv, "--format", "-f", help="Format de sortida"),
-    domain: str = typer.Option(DEFAULT_DOMAIN, help="Domini del portal de dades obertes"),
+    domain: str = typer.Option(
+        DEFAULT_DOMAIN, help="Domini del portal de dades obertes"
+    ),
 ) -> None:
     """Descarrega la versió actual (més recent) d'un conjunt de dades."""
     base = _base_url(domain)
@@ -372,15 +482,7 @@ def download_current(
             output = _resolve_output_path(client, domain, dataset_id, "actual", fmt)
 
         console.print(f"Descarregant snapshot actual de {dataset_id}...")
-        with client.stream(
-            "GET",
-            f"{base}/api/views/{dataset_id}/rows.{ext}",
-            params={"accessType": "DOWNLOAD"},
-            timeout=600,
-            follow_redirects=True,
-        ) as resp:
-            resp.raise_for_status()
-            _stream_to_file(resp, output)
+        _download_current_paginated(client, base, dataset_id, output, ext)
 
     size_mb = output.stat().st_size / (1024 * 1024)
     console.print(f"Desat a {output} ({size_mb:.1f} MB)")
