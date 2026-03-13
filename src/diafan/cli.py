@@ -1,6 +1,7 @@
 # ABOUTME: CLI for downloading datasets from the Catalan transparency portal.
 # ABOUTME: Supports listing versions, downloading snapshots, and inspecting schema.
 
+import asyncio
 import enum
 import json
 import math
@@ -24,6 +25,7 @@ console = Console()
 DEFAULT_DOMAIN = "analisi.transparenciacatalunya.cat"
 CHANGES_PAGE_SIZE = 100
 RESOURCE_PAGE_SIZE = 50_000
+DOWNLOAD_CONCURRENCY = 8
 ARCHIVE_POLL_INTERVAL_SECONDS = 3
 ARCHIVE_POLL_TIMEOUT_SECONDS = 600
 
@@ -400,18 +402,15 @@ def download(
     console.print(f"Desat a {output} ({size_mb:.1f} MB)")
 
 
-def _download_current_paginated(
-    client: httpx.Client,
+async def _download_current_paginated(
+    client: httpx.AsyncClient,
     base_url: str,
     dataset_id: str,
     output: Path,
     fmt_ext: str,
 ) -> None:
-    """Download a dataset via the SODA resource API with pagination."""
-    resource_url = f"{base_url}/resource/{dataset_id}.{fmt_ext}"
-
-    # Get total row count
-    count_resp = client.get(
+    """Download a dataset via the SODA resource API with concurrent pagination."""
+    count_resp = await client.get(
         f"{base_url}/resource/{dataset_id}.json",
         params={"$select": "count(*)"},
         timeout=30,
@@ -424,16 +423,13 @@ def _download_current_paginated(
         return
 
     total_pages = math.ceil(total_rows / RESOURCE_PAGE_SIZE)
+    resource_url = f"{base_url}/resource/{dataset_id}.{fmt_ext}"
+    semaphore = asyncio.Semaphore(DOWNLOAD_CONCURRENCY)
 
-    with (
-        open(output, "w") as f,
-        tqdm.tqdm(total=total_rows, unit="files", desc="Descarregant") as progress,
-    ):
-        json_accumulator: list = [] if fmt_ext == "json" else None
-
-        for page in range(total_pages):
+    async def fetch_page(page: int) -> str:
+        async with semaphore:
             offset = page * RESOURCE_PAGE_SIZE
-            resp = client.get(
+            resp = await client.get(
                 resource_url,
                 params={
                     "$limit": RESOURCE_PAGE_SIZE,
@@ -443,21 +439,23 @@ def _download_current_paginated(
                 timeout=600,
             )
             resp.raise_for_status()
+            progress.update(1)
+            return resp.text
 
-            if fmt_ext == "json":
-                json_accumulator.extend(resp.json())
-            else:
-                text = resp.text
-                if page > 0:
-                    # Strip the header line from subsequent pages
-                    text = text[text.index("\n") + 1 :]
-                f.write(text)
+    with tqdm.tqdm(total=total_pages, unit="pàg", desc="Descarregant") as progress:
+        pages = await asyncio.gather(*[fetch_page(p) for p in range(total_pages)])
 
-            rows_fetched = min(RESOURCE_PAGE_SIZE, total_rows - offset)
-            progress.update(rows_fetched)
-
+    with open(output, "w") as f:
         if fmt_ext == "json":
-            f.write(json.dumps(json_accumulator))
+            all_items: list = []
+            for page_text in pages:
+                all_items.extend(json.loads(page_text))
+            f.write(json.dumps(all_items))
+        else:
+            for i, page_text in enumerate(pages):
+                if i > 0:
+                    page_text = page_text[page_text.index("\n") + 1 :]
+                f.write(page_text)
 
 
 @app.command()
@@ -477,12 +475,19 @@ def download_current(
     base = _base_url(domain)
     ext = "json" if fmt == Format.json else "csv"
 
-    with _make_client() as client:
+    with _make_client() as sync_client:
         if output is None:
-            output = _resolve_output_path(client, domain, dataset_id, "actual", fmt)
+            output = _resolve_output_path(
+                sync_client, domain, dataset_id, "actual", fmt
+            )
 
-        console.print(f"Descarregant snapshot actual de {dataset_id}...")
-        _download_current_paginated(client, base, dataset_id, output, ext)
+    console.print(f"Descarregant snapshot actual de {dataset_id}...")
+
+    async def _run() -> None:
+        async with httpx.AsyncClient(http2=True) as client:
+            await _download_current_paginated(client, base, dataset_id, output, ext)
+
+    asyncio.run(_run())
 
     size_mb = output.stat().st_size / (1024 * 1024)
     console.print(f"Desat a {output} ({size_mb:.1f} MB)")
