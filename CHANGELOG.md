@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.1.3](https://github.com/davidpoblador/diafan/compare/v0.1.2...v0.1.3) (2026-06-22)
+
+
+### Miscellaneous Chores
+
+* **deps:** update actions/checkout action to v7 ([#21](https://github.com/davidpoblador/diafan/issues/21)) ([b05b3af](https://github.com/davidpoblador/diafan/commit/b05b3af6da8cb0dfd00c1de40b74490e004f3c0d))
+* **deps:** update astral-sh/setup-uv action to v8 ([#15](https://github.com/davidpoblador/diafan/issues/15)) ([dcc091d](https://github.com/davidpoblador/diafan/commit/dcc091d1474cc95b80dd8f00f7017b0aabceb94f))
+* **deps:** update dependency uv_build to &gt;=0.11.23,&lt;0.12 ([#13](https://github.com/davidpoblador/diafan/issues/13)) ([7379550](https://github.com/davidpoblador/diafan/commit/7379550ecb9b09575c89289856575904ef1c1324))
+* **deps:** update googleapis/release-please-action action to v5 ([#16](https://github.com/davidpoblador/diafan/issues/16)) ([496baf3](https://github.com/davidpoblador/diafan/commit/496baf32c77faee918d6d96088d3ee7940ed63c7))
+
+
+### CI/CD Changes
+
+* allow revert as a conventional PR title type ([#20](https://github.com/davidpoblador/diafan/issues/20)) ([7b838d9](https://github.com/davidpoblador/diafan/commit/7b838d9aa20544b6b2f693e24423850ee113a833))
+* validate PR titles as conventional commits ([#18](https://github.com/davidpoblador/diafan/issues/18)) ([1e59ec8](https://github.com/davidpoblador/diafan/commit/1e59ec878fdb5578c46d6603d19ceef2ca920758))
+
 ## [0.1.2](https://github.com/davidpoblador/diafan/compare/v0.1.1...v0.1.2) (2026-03-13)
 
 
