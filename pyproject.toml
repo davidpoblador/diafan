@@ -1,6 +1,6 @@
 [project]
 name = "diafan"
-version = "0.1.2"
+version = "0.1.3"
 description = "CLI per consultar i descarregar conjunts de dades del Portal de Transparència de Catalunya"
 readme = "README.md"
 license = "MIT"
